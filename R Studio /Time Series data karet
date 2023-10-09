@@ -1,0 +1,172 @@
+#Input Data
+A=Data_jumlah_perkebunan_besar_2009_2017$`Karet Kering`
+B=Data_jumlah_perkebunan_besar_2009_2017$`Minyak Sawit`
+C=Data_jumlah_perkebunan_besar_2009_2017$`Biji Sawit`
+
+#Transformasi Box-Cox
+
+library(forecast)
+BoxCox(A,1) #menentukan nilai transformasi 
+[1] 49.00 44.50 39.10 37.80 46.20 42.50 44.80 40.70 37.40 37.20 38.90 52.20 50.80 46.10 40.60 39.20 47.90
+[18] 44.10 46.50 42.30 38.90 38.70 40.40 54.10 53.85 48.92 42.98 41.44 50.67 46.61 49.26 44.87 41.25 40.93
+[35] 42.76 57.27 54.80 49.79 43.74 42.17 51.57 47.44 50.14 45.67 41.99 41.65 43.52 58.28 59.04 51.15 50.24
+[52] 46.67 50.00 46.04 53.10 53.16 53.23 59.25 61.97 74.57 51.70 50.30 48.90 45.30 50.30 50.10 51.10 45.00
+[69] 38.53 40.90 41.50 44.12 34.68 34.56 34.84 30.90 40.58 40.31 34.21 30.00 73.03 71.08 62.85 77.73 36.54
+[86] 36.44 36.76 32.60 42.52 42.30 36.01 31.64 76.04 74.05 65.53 80.79 38.23 38.36 38.66 34.23 44.53 44.36
+[103] 37.87 33.32 79.08 77.15 68.33 84.09
+
+BoxCox.lambda(A,lower = -2,upper = 2) #menentukan nilai lamda optimal
+[1] -0.7608611
+
+# Transformasi jika lambda tidak sama dengan 1, lalu pengujian hasil transformasinya
+A1=BoxCox(A,-0.7608611)
+BoxCox.lambda(A1,lower = -2,upper = 2)
+[1] 1.906033
+
+# Stasioneritas dalam mean
+adf.test(A)
+
+Augmented Dickey-Fuller Test
+
+data:  A
+Dickey-Fuller = -4.1598, Lag order = 4, p-value = 0.01
+alternative hypothesis: stationary
+
+# Plot ACF dan PACF
+Acf(A)
+Pacf(A)
+
+# pembentukan ARIMA
+auto.arima(A, max.p = 36, max.q = 36, max.d = 2)
+Series: A 
+ARIMA(1,0,0) with non-zero mean 
+
+Coefficients:
+  ar1     mean
+0.5552  49.2163
+s.e.  0.0842   2.1502
+
+sigma^2 = 102.5:  log likelihood = -402.45
+AIC=810.9   AICc=811.13   BIC=818.95
+
+# estimasi parameter
+A_ARIMA=auto.arima(A)
+coeftest(A_ARIMA)
+z test of coefficients:
+  
+          Estimate  Std. Error z value  Pr(>|z|)    
+ar1       0.555217  0.084158   6.5973   4.187e-11 ***
+intercept 49.216252 2.150178   22.8894  < 2.2e-16 ***
+  ---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# estimasi model ARIMA tanpa auto.arima
+Arima(A, c(7,0,0))
+Series: A 
+ARIMA(7,0,0) with non-zero mean 
+
+Coefficients:
+        ar1      ar2     ar3      ar4     ar5      ar6      ar7     mean
+      0.5816  -0.0520  0.1167  -0.4046  0.1871  -0.0395  -0.0911  48.7380
+s.e.  0.0971   0.1128  0.1112   0.1095  0.1186   0.1197   0.1043   1.3016
+
+sigma^2 = 94.38:  log likelihood = -395.17
+AIC=808.33   AICc=810.17   BIC=832.47
+
+# summary dengan menampilkan MAPE, RMSE, dll
+A_ARIMA=auto.arima(A)
+summary(A_ARIMA)
+Series: A 
+ARIMA(1,0,0) with non-zero mean 
+
+Coefficients:
+       ar1     mean
+      0.5552  49.2163
+s.e.  0.0842   2.1502
+
+sigma^2 = 102.5:  log likelihood = -402.45
+AIC=810.9   AICc=811.13   BIC=818.95
+
+Training set error measures:
+                   ME     RMSE      MAE     MPE     MAPE     MASE       ACF1
+Training set -0.004245966 10.03159 6.756264 -3.5991 13.60131 1.045181 0.01789127
+
+# pengecekan diagnosa
+# normalitas residual dengan Jarque berra
+
+jarque.bera.test(A_res)
+
+Jarque Bera Test
+
+data:  A_res
+X-squared = 124.25, df = 2, p-value < 2.2e-16
+
+# uji autokorelasi dengan breusch godfrey
+# random (dengan orde 1)
+A_res=residuals(A_ARIMA)
+bgtest(A_res~A)
+
+Breusch-Godfrey test for serial correlation of order up to 1
+
+data:  A_res ~ A
+LM test = 0.0049369, df = 1, p-value = 0.944
+
+# dengan orde lag tertentu
+bgtest(A_res~A,3)
+
+Breusch-Godfrey test for serial correlation of order up to 3
+
+data:  A_res ~ A
+LM test = 0.86546, df = 3, p-value = 0.8338
+
+# uji autokorelasi dengan ljung box dan box-pierce
+Box.test(A,lag = 1,type = "Ljung-Box")
+
+Box-Ljung test
+
+data:  A
+X-squared = 29.11, df = 1, p-value = 6.84e-08
+
+Box.test(A,lag = 1,type = "Box-Pierce")
+
+Box-Pierce test
+
+data:  A
+X-squared = 28.316, df = 1, p-value = 1.031e-07
+
+# uji homoskedastisitas dengan breusch pagan
+bptest(A_res~A)
+
+studentized Breusch-Pagan test
+
+data:  A_res ~ A
+BP = 7.7644, df = 1, p-value = 0.005329
+
+
+# forecasting dengan model ARIMA dari auto
+forecast(A_ARIMA)
+Point Forecast    Lo 80    Hi 80    Lo 95    Hi 95
+109       69.13396 56.15725 82.11068 49.28780 88.98013
+110       60.27490 45.43221 75.11759 37.57496 82.97484
+111       55.35620 39.98390 70.72850 31.84629 78.86611
+112       52.62526 37.09333 68.15718 28.87123 76.37928
+113       51.10899 35.52819 66.68979 27.28021 74.93776
+114       50.26713 34.67130 65.86297 26.41536 74.11890
+115       49.79972 34.19925 65.40018 25.94086 73.65857
+116       49.54020 33.93831 65.14210 25.67916 73.40124
+117       49.39611 33.79378 64.99845 25.53440 73.25783
+118       49.31611 33.71364 64.91858 25.45420 73.17803
+
+# forecasting dengan model ARIMA yang disetting sendiri
+forecast(Arima(A,c(2,0,0)))
+Point Forecast    Lo 80    Hi 80    Lo 95    Hi 95
+109       69.07965 56.04501 82.11429 49.14489 89.01441
+110       59.59489 44.60461 74.58517 36.66923 82.52055
+111       54.60567 39.12117 70.09017 30.92417 78.28717
+112       52.00762 36.39189 67.62336 28.12542 75.88983
+113       50.65598 35.00492 66.30705 26.71975 74.59222
+114       49.95285 34.29224 65.61346 26.00201 73.90369
+115       49.58708 33.92388 65.25027 25.63229 73.54186
+116       49.39680 33.73291 65.06069 25.44094 73.35266
+117       49.29782 33.63374 64.96190 25.34167 73.25396
+118       49.24633 33.58219 64.91046 25.29010 73.20255
