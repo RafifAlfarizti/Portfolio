@@ -1,0 +1,87 @@
+# Input data
+OP_MLBI=saham_MLBI_OPEN_CLOSED$Pembukaan
+CL_MLBI=saham_MLBI_OPEN_CLOSED$Terakhir
+
+# Uji mean satu sampel
+t.test(OP_MLBI, mu=9.000)
+
+One Sample t-test
+
+data:  OP_MLBI
+t = 0.67471, df = 31, p-value = 0.5049
+alternative hypothesis: true mean is not equal to 9
+95 percent confidence interval:
+  8.939948 9.119427
+sample estimates:
+  mean of x 
+9.029687
+
+# uji mean dua sampel berpasangan
+t.test(OP_MLBI,CL_MLBI, paired=TRUE)
+
+Paired t-test
+
+data:  OP_MLBI and CL_MLBI
+t = 0.25904, df = 31, p-value = 0.7973
+alternative hypothesis: true mean difference is not equal to 0
+95 percent confidence interval:
+  -0.04295925  0.05545925
+sample estimates:
+  mean difference 
+0.00625 
+
+# uji mean dua sampel independen
+t.test(OP_MLBI,CL_MLBI, paired=FALSE)
+
+Welch Two Sample t-test
+
+data:  OP_MLBI and CL_MLBI
+t = 0.10914, df = 60.038, p-value = 0.9135
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+  -0.1082942  0.1207942
+sample estimates:
+mean of x mean of y 
+9.029687  9.023438 
+
+# Anova
+kelA=Data_perlakuan_dan_kelompok$A
+kelB=Data_perlakuan_dan_kelompok$B
+kelC=Data_perlakuan_dan_kelompok$C
+kelD=Data_perlakuan_dan_kelompok$D
+kelE=Data_perlakuan_dan_kelompok$E
+kelF=Data_perlakuan_dan_kelompok$F
+kelG=Data_perlakuan_dan_kelompok$G
+kelData=Data_perlakuan_dan_kelompok$Data
+kelkel=Data_perlakuan_dan_kelompok$Kelompok
+data_aov=aov(kelData~kelkel,data = Data_perlakuan_dan_kelompok)
+TukeyHSD(data_aov)
+
+Tukey multiple comparisons of means
+95% family-wise confidence level
+
+Fit: aov(formula = kelData ~ kelkel, data = Data_perlakuan_dan_kelompok)
+
+$kelkel
+        diff        lwr      upr     p adj
+2-1 -1.428571e-01 -2.518416 2.232702 0.9999960
+3-1  0.000000e+00 -2.375559 2.375559 1.0000000
+4-1  5.714286e-01 -1.804130 2.946988 0.9887599
+5-1 -8.881784e-16 -2.375559 2.375559 1.0000000
+6-1  7.142857e-01 -1.661273 3.089845 0.9653167
+7-1  5.714286e-01 -1.804130 2.946988 0.9887599
+3-2  1.428571e-01 -2.232702 2.518416 0.9999960
+4-2  7.142857e-01 -1.661273 3.089845 0.9653167
+5-2  1.428571e-01 -2.232702 2.518416 0.9999960
+6-2  8.571429e-01 -1.518416 3.232702 0.9193305
+7-2  7.142857e-01 -1.661273 3.089845 0.9653167
+4-3  5.714286e-01 -1.804130 2.946988 0.9887599
+5-3 -8.881784e-16 -2.375559 2.375559 1.0000000
+6-3  7.142857e-01 -1.661273 3.089845 0.9653167
+7-3  5.714286e-01 -1.804130 2.946988 0.9887599
+5-4 -5.714286e-01 -2.946988 1.804130 0.9887599
+6-4  1.428571e-01 -2.232702 2.518416 0.9999960
+7-4  4.440892e-16 -2.375559 2.375559 1.0000000
+6-5  7.142857e-01 -1.661273 3.089845 0.9653167
+7-5  5.714286e-01 -1.804130 2.946988 0.9887599
+7-6 -1.428571e-01 -2.518416 2.232702 0.9999960
