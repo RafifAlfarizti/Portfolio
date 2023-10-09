@@ -1,0 +1,127 @@
+# Input Data
+library(readxl)
+Y=Data_BBM$`Tangki (Y)`
+X1=Data_BBM$mopen
+X2=Data_BBM$bus
+X3=Data_BBM$truk
+X4=Data_BBM$sepmor
+X5=Data_BBM$GAS
+
+# Regresi Berganda
+library(lmtest)
+Reg_BBM=lm(Y~X1+X2+X3+X4+X5)
+summary(Reg_BBM)
+
+Call:
+  lm(formula = Y ~ X1 + X2 + X3 + X4 + X5)
+
+Residuals:
+  Min       1Q   Median       3Q      Max 
+-2599315  -520485  -299351   367912  2639945 
+
+Coefficients:
+            Estimate   Std. Error   t value Pr(>|t|)  
+(Intercept) 590847.411 276650.862   2.136   0.0431 *
+X1              -1.387      1.389  -0.999   0.3278  
+X2               8.135      5.914   1.376   0.1817  
+X3              -6.835      5.632  -1.214   0.2367  
+X4               0.557      0.268   2.078   0.0485 *
+X5             623.403    234.384   2.660   0.0137 *
+  ---
+  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1095000 on 24 degrees of freedom
+Multiple R-squared:  0.4523,	Adjusted R-squared:  0.3382 
+F-statistic: 3.964 on 5 and 24 DF,  p-value: 0.009208
+
+# Uji Wald
+waldtest(Reg_BBM)
+Wald test
+
+Model 1: Y ~ X1 + X2 + X3 + X4 + X5
+Model 2: Y ~ 1
+   Res.Df Df   F   Pr(>F)   
+1     24                      
+2     29 -5 3.9639 0.009208 **
+  ---
+  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+resettest(Reg_BBM, power = 2, type = "regressor")
+RESET test
+
+data:  Reg_BBM
+RESET = 8.8297, df1 = 5, df2 = 19, p-value = 0.0001824
+
+#Uji Autokorelasi
+bgtest(Reg_BBM, order = 1)
+Breusch-Godfrey test for serial correlation of order up to 1
+
+data:  Reg_BBM
+LM test = 2.5226, df = 1, p-value = 0.1122
+
+#Input Data Residual
+residuals(Reg_BBM)
+1          2          3          4          5          6          7          8          9 
+-539149.6  1303992.5  -338048.5  1216545.8   394472.6  -464490.8  -411291.3  -622261.7   302049.0 
+10         11         12         13         14         15         16         17         18 
+225618.4  -649204.6  1447332.8  2639945.2 -2599315.4  1969334.1   660070.3  -802740.3  -385811.5 
+19         20         21         22         23         24         25         26         27 
+184430.0   319827.1   383940.8  -193686.5  -839339.8  -458315.3  -275140.5  -835016.7  -615470.3 
+28         29         30 
+-450557.1  -323561.2  -244157.5 
+res_BBM=residuals(Reg_BBM)
+
+# Normalitas Residual dengan Shapiro dan Jarque bera
+shapiro.test(res_BBM)
+
+Shapiro-Wilk normality test
+
+data:  res_BBM
+W = 0.90895, p-value = 0.014
+
+jarque.bera.test(res_BBM)
+
+Jarque Bera Test
+
+data:  res_BBM
+X-squared = 3.4779, df = 2, p-value = 0.1757
+
+# Uji Homoskedastisitas glejser
+abs_res_bbm=abs(res_BBM)
+summary(lm(abs_res_bbm~X1+X2+X3+X4+X5))
+Call:
+  lm(formula = abs_res_bbm ~ X1 + X2 + X3 + X4 + X5)
+
+Residuals:
+  Min      1Q  Median      3Q     Max 
+-505693 -266226  -68131  115358 1559329 
+
+Coefficients:
+             Estimate   Std. Error t value  Pr(>|t|)    
+(Intercept)  6.290e+05  1.123e+05   5.599   9.2e-06 ***
+X1           9.908e-01  5.640e-01   1.757   0.091706 .  
+X2           1.731e+00  2.401e+00   0.721   0.478009    
+X3          -8.045e+00  2.287e+00  -3.518   0.001763 ** 
+X4           4.406e-01  1.088e-01   4.049   0.000466 ***
+X5           2.885e+02  9.517e+01   3.031   0.005763 ** 
+  ---
+  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 444500 on 24 degrees of freedom
+Multiple R-squared:  0.6202,	Adjusted R-squared:  0.5411 
+F-statistic:  7.84 on 5 and 24 DF,  p-value: 0.0001709
+
+# uji multikolinieritas vif
+vif(Reg_BBM)
+X1        X2        X3         X4        X5 
+15.167329 15.904635 34.987567  6.000738  3.757241 
+
+# uji autokorelasi durbin watson
+dwtest(Reg_BBM,alternative = "two.sided")
+
+Durbin-Watson test
+
+data:  Reg_BBM
+DW = 2.4845, p-value = 0.1599
+alternative hypothesis: true autocorrelation is not 0
+
